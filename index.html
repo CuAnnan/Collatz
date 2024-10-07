@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Collatz Series Generator</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    </head>
+    <body>
+        <div class="container-fluid">
+            <h2 class="row justify-content-center">Collatz Sequence Calculator</h2>
+            <hr/>
+            <div class="row">
+
+                <div class="col-1">
+                    <div class="row">The Collatz Conjecture is a maths thing we got assigned for CSSE in Java. Here it is in javascript because I'm a nerd.</div>
+                </div>
+
+                <div class="col">
+                    <div class="row form-row">
+                        <label for="collatzNumber" class="col-sm-1 col-form-label">Collatz Number</label>
+                        <div class="col">
+                            <input type="number" id="collatzNumber" value="100"/>
+                            <button id="collatzNumberButton" class="btn btn-primary">Calculate</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-1">Collatz Sequence for</div>
+                        <div class="col"><span id="collatzNumberOut"></span>:</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-1">Steps:</div>
+                        <div id="collatzSteps" class="col"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-1">Sequence</div>
+                        <div class="col col-lg-6" id="collatzSequence"></div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <script>
+            class CollatzNode
+            {
+                /**
+                 * @type {number}
+                 */
+                value = 0;
+                /**
+                 *
+                 * @type {CollatzNode}
+                 */
+                pointsTo = null;
+
+                constructor(value)
+                {
+                    this.value = value;
+                }
+
+                /**
+                 * @param {CollatzNode} otherNode
+                 */
+                pointTo(otherNode)
+                {
+                    this.pointsTo = otherNode;
+                }
+
+                hasNextValue()
+                {
+                    return this.pointsTo !== null;
+                }
+
+                getNextValue()
+                {
+                    return this.pointsTo;
+                }
+
+                getValue()
+                {
+                    return this.value;
+                }
+            }
+
+            class CollatzSequence
+            {
+                /**
+                 * @type {CollatzNode}
+                 */
+                start = null;
+                /**
+                 * @type {CollatzNode}
+                 */
+                last = null;
+                /**
+                 * @type {number}
+                 */
+                steps = 0;
+                /**
+                 * @type {boolean}
+                 */
+                resolved = false;
+
+                constructor(start)
+                {
+                    this.start = new CollatzNode(start);
+                    this.last = this.start;
+                }
+
+                addResult(value)
+                {
+                    let next = new CollatzNode(value);
+                    this.last.pointTo(next);
+                    this.last = next;
+                    this.steps++;
+                }
+
+                resolve()
+                {
+                    if(this.resolved)
+                    {
+                        return this;
+                    }
+
+                    let nextValue;
+                    do
+                    {
+                        // get the current value
+                        let currentValue = this.last.getValue();
+                        // do the mathy bit
+                        nextValue = currentValue%2 === 0?(currentValue / 2):(currentValue * 3 + 1);
+                        // add it to the sequence
+                        this.addResult(nextValue);
+                        // only end if the calculated result of the mathy bit is 1, per the @see link
+                    } while(nextValue !== 1);
+                    this.resolved = true;
+                    return this;
+                }
+
+                getSize()
+                {
+                    return this.steps;
+                }
+
+                getFirstElement()
+                {
+                    return this.start;
+                }
+            }
+
+            window.addEventListener('load', function(){
+                let $input = document.getElementById('collatzNumber');
+                let $numberOut = document.getElementById('collatzNumberOut');
+                let $steps = document.getElementById('collatzSteps');
+                let $sequence = document.getElementById('collatzSequence');
+
+                function showOutput()
+                {
+                    let collatz = new CollatzSequence($input.value).resolve();
+                    console.log("Resolved");
+                    $numberOut.innerText = $input.value;
+                    $steps.innerText = ""+collatz.steps;
+                    console.log(collatz);
+                    let current = collatz.getFirstElement();
+                    let textOut = current.getValue()+", ";
+                    do
+                    {
+                        current = current.getNextValue();
+                        textOut += current.getValue();
+                        if(current.hasNextValue())
+                        {
+                            textOut+=", ";
+                        }
+                    }while(current.getNextValue()!==null);
+                    $sequence.innerHTML = textOut;
+                    console.log("should be done");
+                }
+
+                document.getElementById('collatzNumberButton').addEventListener('click', showOutput);
+                showOutput();
+            });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+    </body>
+</html>
